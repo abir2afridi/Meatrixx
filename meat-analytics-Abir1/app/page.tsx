@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useCart } from "../hooks/use-cart"
@@ -13,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
+import { useAuth } from "@/hooks/use-auth"
 import {
   Dialog,
   DialogContent,
@@ -317,41 +319,47 @@ const mockData = {
 }
 
 export default function MeatAnalyticsDashboard() {
-  const router = useRouter()
-  const { cart, addToCart, removeFromCart, updateQuantity, getTotalPrice } = useCart()
-  const cartTotal = getTotalPrice()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [lastUpdated, setLastUpdated] = useState(new Date())
-  const [activeView, setActiveView] = useState("dashboard")
-  const { theme, setTheme } = useTheme()
-  const { toast } = useToast()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+const router = useRouter()
+const { cart, addToCart, removeFromCart, updateQuantity, getTotalPrice } = useCart()
+const cartTotal = getTotalPrice()
+const [sidebarOpen, setSidebarOpen] = useState(false)
+const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+const [activeView, setActiveView] = useState("dashboard")
+const [currentModule, setCurrentModule] = useState("products")
+const [searchTerm, setSearchTerm] = useState("")
+const [filterValue, setFilterValue] = useState("all")
+const { theme, setTheme } = useTheme()
+const { toast } = useToast()
 
-  // Modal and form states
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [showEditForm, setShowEditForm] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [selectedItem, setSelectedItem] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterValue, setFilterValue] = useState("all")
-  const [formData, setFormData] = useState({})
-  const [currentModule, setCurrentModule] = useState("")
+// Authentication state
+const { login, register, logout } = useAuth()
+const [isAuthenticated, setIsAuthenticated] = useState(false)
+const [showLoginForm, setShowLoginForm] = useState(false)
+const [loginData, setLoginData] = useState({ email: "", password: "" })
+const [registerData, setRegisterData] = useState({ email: "", password: "", name: "", role: "Retailer" })
+const [showRegisterForm, setShowRegisterForm] = useState(false)
 
-  // Real-time data states
-  const [weatherData, setWeatherData] = useState({ temp: 28, condition: "Sunny", icon: "☀️" })
-  const [currentTime, setCurrentTime] = useState(new Date())
+// UI states
+const [loading, setLoading] = useState(false)
+const [showAddForm, setShowAddForm] = useState(false)
+const [showEditForm, setShowEditForm] = useState(false)
+const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+const [selectedItem, setSelectedItem] = useState(null)
+const [formData, setFormData] = useState({})
+const [mounted, setMounted] = useState(false)
 
-  // Data states with localStorage persistence
-  const [products, setProducts] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("meatanalytics_products")
-      return saved ? JSON.parse(saved) : mockData.products
-    }
-    return mockData.products
-  })
+// Real-time data states
+const [weatherData, setWeatherData] = useState({ temp: 28, condition: "Sunny", icon: "☀️"})
+const [currentTime, setCurrentTime] = useState<Date | null>(null)
+
+// Data states with localStorage persistence
+const [products, setProducts] = useState(() => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("meatanalytics_products")
+    return saved ? JSON.parse(saved) : mockData.products
+  }
+  return mockData.products
+})
 
   const [vendors, setVendors] = useState(() => {
     if (typeof window !== "undefined") {
@@ -474,6 +482,10 @@ export default function MeatAnalyticsDashboard() {
   ])
 
   useEffect(() => {
+    // Initialize time on client side only
+    setCurrentTime(new Date())
+    setLastUpdated(new Date())
+    
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
@@ -797,17 +809,31 @@ export default function MeatAnalyticsDashboard() {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">MeatrixAnalytics Dashboard</h1>
-          <p className="text-muted-foreground">Last updated: {lastUpdated.toLocaleString()}</p>
+          <p className="text-muted-foreground">Last updated: {lastUpdated ? lastUpdated.toLocaleString() : 'Loading...'}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm">
             <Clock className="h-4 w-4" />
-            {currentTime.toLocaleTimeString()}
+            {mounted && currentTime ? currentTime.toLocaleTimeString() : '--:--:--'}
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span>{weatherData.icon}</span>
             {weatherData.temp}°C {weatherData.condition}
           </div>
+          <Link href="/login">
+            <Button variant="outline" size="sm">Login</Button>
+          </Link>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              await logout()
+              toast({ title: "Signed out", description: "You have been signed out." })
+              router.push("/login")
+            }}
+          >
+            Sign out
+          </Button>
         </div>
       </div>
 
