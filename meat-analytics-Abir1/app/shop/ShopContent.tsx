@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { useCart } from "@/hooks/use-cart"
 import { ProductModal } from "./product-modal"
 import { CartSidebar } from "./cart-sidebar"
 import { toast } from "sonner"
+import { ProductFilterSheet, type ProductFilterValues } from "@/components/filters/product-filter-sheet"
 
 export function ShopContent() {
   const [products, setProducts] = useState<Product[]>(mockProducts)
@@ -23,10 +24,31 @@ export function ShopContent() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [cartAnimation, setCartAnimation] = useState(false)
   const router = useRouter()
+  const [filterOpen, setFilterOpen] = useState(false)
+
+  const priceBounds = useMemo(() => {
+    if (!products.length) return { min: 0, max: 0 }
+    const prices = products.map((p) => p.retailPrice)
+    return { min: Math.min(...prices), max: Math.max(...prices) }
+  }, [products])
+
+  const [filters, setFilters] = useState<ProductFilterValues>({
+    categories: [],
+    districts: [],
+    priceRange: [0, 0],
+  })
+
+  // keep price range in sync if data changes
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      priceRange: prev.priceRange && prev.priceRange[1] !== 0 ? prev.priceRange : [priceBounds.min, priceBounds.max],
+    }))
+  }, [priceBounds.min, priceBounds.max])
 
   const { cart, addToCart, updateQuantity, removeFromCart, getItemCount, getTotalPrice } = useCart()
 
-  // Filter products based on search and category
+  // Filter products based on search, category, and advanced filters
   useEffect(() => {
     let filtered = products
 
@@ -43,8 +65,21 @@ export function ShopContent() {
       filtered = filtered.filter((product) => product.type === selectedCategory)
     }
 
+    if (filters.categories && filters.categories.length > 0) {
+      filtered = filtered.filter((p) => filters.categories!.includes(p.type))
+    }
+
+    if (filters.districts && filters.districts.length > 0) {
+      filtered = filtered.filter((p) => filters.districts!.includes(p.district))
+    }
+
+    if (filters.priceRange && filters.priceRange.length === 2) {
+      const [min, max] = filters.priceRange
+      filtered = filtered.filter((p) => p.retailPrice >= min && p.retailPrice <= max)
+    }
+
     setFilteredProducts(filtered)
-  }, [products, searchQuery, selectedCategory])
+  }, [products, searchQuery, selectedCategory, filters])
 
   const handleAddToCart = (product: Product) => {
     addToCart({
@@ -106,6 +141,8 @@ export function ShopContent() {
   }
 
   const categories = ["all", ...Array.from(new Set(products.map((p) => p.type)))]
+  const categoriesNoAll = useMemo(() => Array.from(new Set(products.map((p) => p.type))), [products])
+  const districts = useMemo(() => Array.from(new Set(products.map((p) => p.district))), [products])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white space-y-6 p-6">
@@ -158,6 +195,14 @@ export function ShopContent() {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto border-slate-300 text-slate-600 hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-all duration-300"
+              onClick={() => setFilterOpen(true)}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -309,6 +354,20 @@ export function ShopContent() {
         updateQuantity={updateQuantity}
         removeFromCart={removeFromCart}
         getTotalPrice={getTotalPrice}
+      />
+
+      {/* Filter Sheet */}
+      <ProductFilterSheet
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        allCategories={categoriesNoAll}
+        allDistricts={districts}
+        priceMin={priceBounds.min}
+        priceMax={priceBounds.max}
+        value={filters}
+        onChange={setFilters}
+        onApply={() => setFilterOpen(false)}
+        onReset={() => setFilters({ categories: [], districts: [], priceRange: [priceBounds.min, priceBounds.max] })}
       />
     </div>
   )

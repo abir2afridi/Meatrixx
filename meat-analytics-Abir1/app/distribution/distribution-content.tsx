@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,7 @@ import { Plus, Search, Filter, Download, MapPin, Truck, Clock, Thermometer } fro
 import { mockApi } from "@/services/mock-api"
 import type { Distribution } from "@/data/mock-data"
 import { DistributionForm } from "./distribution-form"
+import { DistributionFilterSheet, type DistributionFilters } from "@/components/filters/distribution-filter-sheet"
 
 export function DistributionContent() {
   const [distribution, setDistribution] = useState<Distribution[]>([])
@@ -17,21 +18,58 @@ export function DistributionContent() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showForm, setShowForm] = useState(false)
   const [editingDistribution, setEditingDistribution] = useState<Distribution | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [filters, setFilters] = useState<DistributionFilters>({
+    statuses: [],
+    drivers: [],
+    origins: [],
+    destinations: [],
+    dateFrom: "",
+    dateTo: "",
+  })
+
+  const allStatuses = useMemo(
+    () => Array.from(new Set(distribution.map((d) => d.status))),
+    [distribution],
+  )
+  const allDrivers = useMemo(
+    () => Array.from(new Set(distribution.map((d) => d.driverName))).filter(Boolean),
+    [distribution],
+  )
+  const allOrigins = useMemo(
+    () => Array.from(new Set(distribution.map((d) => d.origin))).filter(Boolean),
+    [distribution],
+  )
+  const allDestinations = useMemo(
+    () => Array.from(new Set(distribution.map((d) => d.destination))).filter(Boolean),
+    [distribution],
+  )
 
   useEffect(() => {
     loadDistribution()
   }, [])
 
   useEffect(() => {
-    const filtered = distribution.filter(
-      (route) =>
-        route.routeNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        route.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        route.origin.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        route.destination.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
+    const q = searchTerm.toLowerCase()
+    let filtered = distribution.filter((route) => {
+      const matchesSearch =
+        route.routeNumber.toLowerCase().includes(q) ||
+        route.driverName.toLowerCase().includes(q) ||
+        route.origin.toLowerCase().includes(q) ||
+        route.destination.toLowerCase().includes(q)
+
+      const statusOk = !filters.statuses?.length || filters.statuses.includes(route.status)
+      const driverOk = !filters.drivers?.length || filters.drivers.includes(route.driverName)
+      const originOk = !filters.origins?.length || filters.origins.includes(route.origin)
+      const destOk = !filters.destinations?.length || filters.destinations.includes(route.destination)
+
+      const fromOk = !filters.dateFrom || route.scheduledDate >= filters.dateFrom!
+      const toOk = !filters.dateTo || route.scheduledDate <= filters.dateTo!
+
+      return matchesSearch && statusOk && driverOk && originOk && destOk && fromOk && toOk
+    })
     setFilteredDistribution(filtered)
-  }, [distribution, searchTerm])
+  }, [distribution, searchTerm, filters])
 
   const loadDistribution = async () => {
     try {
@@ -162,7 +200,7 @@ export function DistributionContent() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => setFilterOpen(true)}>
           <Filter className="h-4 w-4 mr-2" />
           Filters
         </Button>
@@ -265,6 +303,22 @@ export function DistributionContent() {
           }}
         />
       )}
+
+      {/* Filters Sheet */}
+      <DistributionFilterSheet
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        allStatuses={allStatuses}
+        allDrivers={allDrivers}
+        allOrigins={allOrigins}
+        allDestinations={allDestinations}
+        value={filters}
+        onChange={setFilters}
+        onApply={() => setFilterOpen(false)}
+        onReset={() =>
+          setFilters({ statuses: [], drivers: [], origins: [], destinations: [], dateFrom: "", dateTo: "" })
+        }
+      />
     </div>
   )
 }
