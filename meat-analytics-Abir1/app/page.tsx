@@ -2967,8 +2967,564 @@ const [products, setProducts] = useState(() => {
             <DialogDescription>Update the details for this {currentModule.slice(0, -1)}.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Same form fields as Add Form but with existing data */}
-            {/* Implementation would be similar to Add Form but with pre-filled values */}
+            {currentModule === "products" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-name">Product Name</Label>
+                  <Input
+                    id="edit-name"
+                    value={formData.name || ""}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-type">Type</Label>
+                  <Select
+                    value={formData.type || ""}
+                    onValueChange={(value) => setFormData({ ...formData, type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beef">Beef</SelectItem>
+                      <SelectItem value="chicken">Chicken</SelectItem>
+                      <SelectItem value="mutton">Mutton</SelectItem>
+                      <SelectItem value="fish">Fish</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-breed">Breed</Label>
+                  <Input
+                    id="edit-breed"
+                    value={formData.breed || ""}
+                    onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-weight">Weight (kg)</Label>
+                  <Input
+                    id="edit-weight"
+                    type="number"
+                    step="0.1"
+                    value={formData.weight || ""}
+                    onChange={(e) => setFormData({ ...formData, weight: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-retailPrice">Retail Price (৳)</Label>
+                  <Input
+                    id="edit-retailPrice"
+                    type="number"
+                    step="0.01"
+                    value={formData.retailPrice || ""}
+                    onChange={(e) => setFormData({ ...formData, retailPrice: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-district">District</Label>
+                  <Input
+                    id="edit-district"
+                    value={formData.district || ""}
+                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-image">Image URL</Label>
+                  <Input
+                    id="edit-image"
+                    value={formData.image || ""}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    placeholder="Optional image URL"
+                  />
+                </div>
+              </>
+            )}
+
+            {currentModule === "livestock" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-animalId">Animal ID</Label>
+                  <Input
+                    id="edit-animalId"
+                    value={formData.animalId || ""}
+                    onChange={(e) => setFormData({ ...formData, animalId: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-type">Type</Label>
+                  <Select
+                    value={formData.type || ""}
+                    onValueChange={(value) => setFormData({ ...formData, type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Cattle">Cattle</SelectItem>
+                      <SelectItem value="Goat">Goat</SelectItem>
+                      <SelectItem value="Sheep">Sheep</SelectItem>
+                      <SelectItem value="Chicken">Chicken</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-breed">Breed</Label>
+                  <Input
+                    id="edit-breed"
+                    value={formData.breed || ""}
+                    onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-age">Age (months)</Label>
+                  <Input
+                    id="edit-age"
+                    type="number"
+                    value={formData.age || ""}
+                    onChange={(e) => setFormData({ ...formData, age: Number.parseInt(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-weight">Weight (kg)</Label>
+                  <Input
+                    id="edit-weight"
+                    type="number"
+                    step="0.1"
+                    value={formData.weight || ""}
+                    onChange={(e) => setFormData({ ...formData, weight: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-health">Health Status</Label>
+                  <Select
+                    value={formData.health || ""}
+                    onValueChange={(value) => setFormData({ ...formData, health: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select health status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Excellent">Excellent</SelectItem>
+                      <SelectItem value="Good">Good</SelectItem>
+                      <SelectItem value="Fair">Fair</SelectItem>
+                      <SelectItem value="Poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-location">Location</Label>
+                  <Input
+                    id="edit-location"
+                    value={formData.location || ""}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {currentModule === "nutrition" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-productType">Product Type</Label>
+                  <Input
+                    id="edit-productType"
+                    value={formData.productType || ""}
+                    onChange={(e) => setFormData({ ...formData, productType: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-protein">Protein (%)</Label>
+                  <Input
+                    id="edit-protein"
+                    type="number"
+                    step="0.1"
+                    value={formData.protein || ""}
+                    onChange={(e) => setFormData({ ...formData, protein: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-fat">Fat (%)</Label>
+                  <Input
+                    id="edit-fat"
+                    type="number"
+                    step="0.1"
+                    value={formData.fat || ""}
+                    onChange={(e) => setFormData({ ...formData, fat: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-moisture">Moisture (%)</Label>
+                  <Input
+                    id="edit-moisture"
+                    type="number"
+                    step="0.1"
+                    value={formData.moisture || ""}
+                    onChange={(e) => setFormData({ ...formData, moisture: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-ph">pH Level</Label>
+                  <Input
+                    id="edit-ph"
+                    type="number"
+                    step="0.01"
+                    value={formData.ph || ""}
+                    onChange={(e) => setFormData({ ...formData, ph: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-temperature">Temperature</Label>
+                  <Input
+                    id="edit-temperature"
+                    value={formData.temperature || ""}
+                    onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-expiryDate">Expiry Date</Label>
+                  <Input
+                    id="edit-expiryDate"
+                    type="date"
+                    value={formData.expiryDate || ""}
+                    onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-supplier">Supplier</Label>
+                  <Input
+                    id="edit-supplier"
+                    value={formData.supplier || ""}
+                    onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {currentModule === "routes" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-name">Route Name</Label>
+                  <Input
+                    id="edit-name"
+                    value={formData.name || ""}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-driver">Driver</Label>
+                  <Input
+                    id="edit-driver"
+                    value={formData.driver || ""}
+                    onChange={(e) => setFormData({ ...formData, driver: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-vehicle">Vehicle</Label>
+                  <Input
+                    id="edit-vehicle"
+                    value={formData.vehicle || ""}
+                    onChange={(e) => setFormData({ ...formData, vehicle: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-stops">Number of Stops</Label>
+                  <Input
+                    id="edit-stops"
+                    type="number"
+                    value={formData.stops || ""}
+                    onChange={(e) => setFormData({ ...formData, stops: Number.parseInt(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-distance">Distance</Label>
+                  <Input
+                    id="edit-distance"
+                    value={formData.distance || ""}
+                    onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-estimatedTime">Estimated Time</Label>
+                  <Input
+                    id="edit-estimatedTime"
+                    value={formData.estimatedTime || ""}
+                    onChange={(e) => setFormData({ ...formData, estimatedTime: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {currentModule === "agentorders" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-agent">Agent Name</Label>
+                  <Input
+                    id="edit-agent"
+                    value={formData.agent || ""}
+                    onChange={(e) => setFormData({ ...formData, agent: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-products">Products</Label>
+                  <Textarea
+                    id="edit-products"
+                    value={formData.products || ""}
+                    onChange={(e) => setFormData({ ...formData, products: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-total">Total Amount</Label>
+                  <Input
+                    id="edit-total"
+                    type="number"
+                    step="0.01"
+                    value={formData.total || ""}
+                    onChange={(e) => setFormData({ ...formData, total: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-commission">Commission</Label>
+                  <Input
+                    id="edit-commission"
+                    type="number"
+                    step="0.01"
+                    value={formData.commission || ""}
+                    onChange={(e) => setFormData({ ...formData, commission: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+              </>
+            )}
+
+            {currentModule === "purchases" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-supplier">Supplier</Label>
+                  <Input
+                    id="edit-supplier"
+                    value={formData.supplier || ""}
+                    onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-items">Items</Label>
+                  <Textarea
+                    id="edit-items"
+                    value={formData.items || ""}
+                    onChange={(e) => setFormData({ ...formData, items: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-cost">Cost</Label>
+                  <Input
+                    id="edit-cost"
+                    type="number"
+                    step="0.01"
+                    value={formData.cost || ""}
+                    onChange={(e) => setFormData({ ...formData, cost: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-deliveryDate">Delivery Date</Label>
+                  <Input
+                    id="edit-deliveryDate"
+                    type="date"
+                    value={formData.deliveryDate || ""}
+                    onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {currentModule === "scale" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-productType">Product Type</Label>
+                  <Input
+                    id="edit-productType"
+                    value={formData.productType || ""}
+                    onChange={(e) => setFormData({ ...formData, productType: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-weight">Weight (lbs)</Label>
+                  <Input
+                    id="edit-weight"
+                    type="number"
+                    step="0.1"
+                    value={formData.weight || ""}
+                    onChange={(e) => setFormData({ ...formData, weight: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-operator">Operator</Label>
+                  <Input
+                    id="edit-operator"
+                    value={formData.operator || ""}
+                    onChange={(e) => setFormData({ ...formData, operator: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-batchNumber">Batch Number</Label>
+                  <Input
+                    id="edit-batchNumber"
+                    value={formData.batchNumber || ""}
+                    onChange={(e) => setFormData({ ...formData, batchNumber: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-quality">Quality Grade</Label>
+                  <Select
+                    value={formData.quality || ""}
+                    onValueChange={(value) => setFormData({ ...formData, quality: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select quality grade" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Grade A">Grade A</SelectItem>
+                      <SelectItem value="Grade B">Grade B</SelectItem>
+                      <SelectItem value="Grade C">Grade C</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {currentModule === "vendororders" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-vendor">Vendor</Label>
+                  <Input
+                    id="edit-vendor"
+                    value={formData.vendor || ""}
+                    onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-products">Products</Label>
+                  <Textarea
+                    id="edit-products"
+                    value={formData.products || ""}
+                    onChange={(e) => setFormData({ ...formData, products: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-quantity">Quantity</Label>
+                  <Input
+                    id="edit-quantity"
+                    type="number"
+                    value={formData.quantity || ""}
+                    onChange={(e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-total">Total Amount</Label>
+                  <Input
+                    id="edit-total"
+                    type="number"
+                    step="0.01"
+                    value={formData.total || ""}
+                    onChange={(e) => setFormData({ ...formData, total: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-deliveryDate">Delivery Date</Label>
+                  <Input
+                    id="edit-deliveryDate"
+                    type="date"
+                    value={formData.deliveryDate || ""}
+                    onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {currentModule === "vendors" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-name">Vendor Name</Label>
+                  <Input
+                    id="edit-name"
+                    value={formData.name || ""}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-contact">Contact Person</Label>
+                  <Input
+                    id="edit-contact"
+                    value={formData.contact || ""}
+                    onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-phone">Phone</Label>
+                  <Input
+                    id="edit-phone"
+                    value={formData.phone || ""}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={formData.email || ""}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-location">Location</Label>
+                  <Input
+                    id="edit-location"
+                    value={formData.location || ""}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {currentModule === "orders" && (
+              <>
+                <div>
+                  <Label htmlFor="edit-customer">Customer</Label>
+                  <Input
+                    id="edit-customer"
+                    value={formData.customer || ""}
+                    onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-items">Items</Label>
+                  <Textarea
+                    id="edit-items"
+                    value={formData.items || ""}
+                    onChange={(e) => setFormData({ ...formData, items: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-total">Total Amount</Label>
+                  <Input
+                    id="edit-total"
+                    type="number"
+                    step="0.01"
+                    value={formData.total || ""}
+                    onChange={(e) => setFormData({ ...formData, total: Number.parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-deliveryTime">Delivery Time</Label>
+                  <Input
+                    id="edit-deliveryTime"
+                    value={formData.deliveryTime || ""}
+                    onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditForm(false)}>
