@@ -3446,6 +3446,7 @@ const [products, setProducts] = useState(() => {
               </>
             )}
 
+<<<<<<< HEAD
             {currentModule === "slaughter" && (
               <>
                 <div>
@@ -3570,6 +3571,8 @@ const [products, setProducts] = useState(() => {
               </>
             )}
 
+=======
+>>>>>>> 334c4fa1c843a63ad0c311520dd373bef04ac10f
             {currentModule === "scale" && (
               <>
                 <div>
