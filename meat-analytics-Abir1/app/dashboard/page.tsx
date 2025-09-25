@@ -78,6 +78,7 @@ import {
 } from "lucide-react"
 import { ProductFilterSheet, type ProductFilterValues } from "@/components/filters/product-filter-sheet"
 import { Mail, Phone, MapPin, Globe, Linkedin, Github, Twitter, Facebook } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 
 import OrdersContent from "@/app/orders/OrdersContent"
 import { ShopContent } from "@/app/shop/ShopContent"
@@ -330,8 +331,12 @@ const [activeView, setActiveView] = useState("dashboard")
 const [currentModule, setCurrentModule] = useState("products")
 const [searchTerm, setSearchTerm] = useState("")
 const [filterValue, setFilterValue] = useState("all")
-const { theme, setTheme } = useTheme()
+const { theme, resolvedTheme, setTheme } = useTheme()
 const { toast } = useToast()
+
+const activeTheme = resolvedTheme ?? theme ?? "light"
+const isDarkMode = activeTheme === "dark"
+const toggleTheme = () => setTheme(isDarkMode ? "light" : "dark")
 
 // Authentication state
 const { login, register, logout, user, isReady } = useAuth()
@@ -1805,11 +1810,35 @@ const [products, setProducts] = useState(() => {
             <CardTitle>System Preferences</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="theme-toggle">Dark Mode</Label>
-              <Button variant="outline" size="sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label htmlFor="theme-toggle" className="text-sm font-medium">
+                  Appearance
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {isDarkMode ? "Dark theme active for low-light environments." : "Light theme active for clarity and contrast."}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 rounded-full border bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+                  {isDarkMode ? (
+                    <>
+                      <Moon className="h-3 w-3 text-primary" />
+                      <span>Dark</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="h-3 w-3 text-yellow-500" />
+                      <span>Light</span>
+                    </>
+                  )}
+                </div>
+                <Switch
+                  id="theme-toggle"
+                  checked={isDarkMode}
+                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                />
+              </div>
             </div>
             <div className="flex items-center justify-between">
               <Label>Auto-refresh Dashboard</Label>
@@ -2380,8 +2409,14 @@ const [products, setProducts] = useState(() => {
               <Button variant="ghost" size="sm">
                 <Bell className="h-4 w-4 text-red-700" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full border"
+                aria-label={isDarkMode ? "Switch to light theme" : "Switch to dark theme"}
+                onClick={toggleTheme}
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
             </div>
           </div>
