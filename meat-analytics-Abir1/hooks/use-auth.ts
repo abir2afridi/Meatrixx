@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 export type UserRole = "Admin" | "Supplier" | "Retailer" | "Analyst"
 
@@ -37,13 +37,16 @@ function saveUser(user: StoredUser) {
   localStorage.setItem(USERS_KEY, JSON.stringify(current))
 }
 
-function setCurrentUser(user: Omit<StoredUser, "password"> | null) {
+function persistCurrentUser(user: Omit<StoredUser, "password"> | null) {
   if (typeof window === "undefined") return
   if (user) localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user))
   else localStorage.removeItem(CURRENT_USER_KEY)
 }
 
 export function useAuth() {
+  const [currentUser, setCurrentUser] = useState<Omit<StoredUser, "password"> | null>(null)
+  const [isReady, setIsReady] = useState(false)
+
   const getCurrentUser = useCallback((): Omit<StoredUser, "password"> | null => {
     if (typeof window === "undefined") return null
     try {
@@ -55,11 +58,19 @@ export function useAuth() {
     }
   }, [])
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    setCurrentUser(getCurrentUser())
+    setIsReady(true)
+  }, [getCurrentUser])
+
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     const users = loadUsers()
     const found = users.find((u) => u.email === email && u.password === password)
     if (found) {
-      setCurrentUser({ email: found.email, name: found.name, role: found.role })
+      const sanitizedUser = { email: found.email, name: found.name, role: found.role }
+      persistCurrentUser(sanitizedUser)
+      setCurrentUser(sanitizedUser)
       return true
     }
     return false
@@ -72,13 +83,16 @@ export function useAuth() {
       if (exists) return false
       const newUser: StoredUser = { email, password, name, role }
       saveUser(newUser)
-      setCurrentUser({ email, name, role })
+      const sanitizedUser = { email, name, role }
+      persistCurrentUser(sanitizedUser)
+      setCurrentUser(sanitizedUser)
       return true
     },
     []
   )
 
   const logout = useCallback(async () => {
+    persistCurrentUser(null)
     setCurrentUser(null)
   }, [])
 
@@ -86,6 +100,7 @@ export function useAuth() {
     login, 
     register, 
     logout, 
-    user: getCurrentUser()
+    user: currentUser,
+    isReady
   }
 }
