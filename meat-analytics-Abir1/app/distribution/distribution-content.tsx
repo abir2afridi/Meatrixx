@@ -5,6 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
 import { Plus, Search, Filter, Download, MapPin, Truck, Clock, Thermometer } from "lucide-react"
 import { mockApi } from "@/services/mock-api"
 import type { Distribution } from "@/data/mock-data"
@@ -27,6 +37,8 @@ export function DistributionContent() {
     dateFrom: "",
     dateTo: "",
   })
+  const [trackingRoute, setTrackingRoute] = useState<Distribution | null>(null)
+  const [trackingDialogOpen, setTrackingDialogOpen] = useState(false)
 
   const allStatuses = useMemo(
     () => Array.from(new Set(distribution.map((d) => d.status))),
@@ -94,6 +106,87 @@ export function DistributionContent() {
       setEditingDistribution(null)
     } catch (error) {
       console.error("Failed to save distribution:", error)
+    }
+  }
+
+  const handleTrackRoute = (route: Distribution) => {
+    setTrackingRoute(route)
+    setTrackingDialogOpen(true)
+  }
+
+  const statusProgressMap: Record<Distribution["status"], number> = {
+    Scheduled: 10,
+    "In Transit": 65,
+    Delivered: 100,
+    Delayed: 45,
+    Cancelled: 0,
+  }
+
+  const trackingProgress = useMemo(() => {
+    if (!trackingRoute) return 0
+    return statusProgressMap[trackingRoute.status] ?? 0
+  }, [trackingRoute])
+
+  const trackingTimeline = useMemo(() => {
+    if (!trackingRoute) return [] as { label: string; description: string; state: "pending" | "current" | "completed" | "issue" }[]
+
+    if (trackingRoute.status === "Cancelled") {
+      return [
+        {
+          label: "Cancelled",
+          description: "This route was cancelled. Please reschedule or contact the logistics team for assistance.",
+          state: "issue" as const,
+        },
+      ]
+    }
+
+    const scheduledDate = new Date(trackingRoute.scheduledDate)
+    const baseTimeline: { label: string; description: string; state: "pending" | "current" | "completed" | "issue" }[] = [
+      {
+        label: "Scheduled",
+        description: `Departure from ${trackingRoute.origin} on ${scheduledDate.toLocaleDateString()}`,
+        state: "pending",
+      },
+      {
+        label: "In Transit",
+        description: `Driver ${trackingRoute.driverName} is en route to ${trackingRoute.destination}.`,
+        state: "pending",
+      },
+      {
+        label: "Delivered",
+        description: `Estimated delivery time: ${trackingRoute.estimatedTime}.`,
+        state: "pending",
+      },
+    ]
+
+    switch (trackingRoute.status) {
+      case "Scheduled":
+        baseTimeline[0].state = "current"
+        break
+      case "In Transit":
+        baseTimeline[0].state = "completed"
+        baseTimeline[1].state = "current"
+        break
+      case "Delayed":
+        baseTimeline[0].state = "completed"
+        baseTimeline[1].state = "issue"
+        break
+      case "Delivered":
+        baseTimeline[0].state = "completed"
+        baseTimeline[1].state = "completed"
+        baseTimeline[2].state = "current"
+        break
+      default:
+        break
+    }
+
+    return baseTimeline
+  }, [trackingRoute])
+
+  const handleTrackingDialogChange = (open: boolean) => {
+    setTrackingDialogOpen(open)
+    if (!open) {
+      setTrackingRoute(null)
     }
   }
 
@@ -273,7 +366,12 @@ export function DistributionContent() {
               )}
 
               <div className="flex items-center gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 bg-transparent"
+                  onClick={() => handleTrackRoute(route)}
+                >
                   Track Route
                 </Button>
                 <Button
@@ -319,6 +417,117 @@ export function DistributionContent() {
           setFilters({ statuses: [], drivers: [], origins: [], destinations: [], dateFrom: "", dateTo: "" })
         }
       />
+
+      {trackingRoute && (
+        <Dialog open={trackingDialogOpen} onOpenChange={handleTrackingDialogChange}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Route Tracking • {trackingRoute.routeNumber}</DialogTitle>
+              <DialogDescription>
+                Monitoring delivery from {trackingRoute.origin} to {trackingRoute.destination}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground">Driver</p>
+                  <p className="font-medium">{trackingRoute.driverName}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground">Vehicle</p>
+                  <p className="font-medium">{trackingRoute.vehicleId}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground">Distance</p>
+                  <p className="font-medium">{trackingRoute.distance} km</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground">Status</p>
+                  <Badge className={getStatusColor(trackingRoute.status)}>{trackingRoute.status}</Badge>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-muted-foreground">Progress</span>
+                  <span className="text-sm font-semibold">{trackingProgress}%</span>
+                </div>
+                <Progress value={trackingProgress} className="h-2" />
+              </div>
+
+              {trackingRoute.gpsLocation ? (
+                <div className="rounded-lg border border-green-200 bg-green-50/60 p-3 text-sm text-green-900">
+                  Live GPS ping received. Last update {new Date().toLocaleTimeString()}.
+                </div>
+              ) : (
+                <div className="rounded-lg border border-yellow-200 bg-yellow-50/60 p-3 text-sm text-yellow-900">
+                  GPS tracking is not available for this route. Status updates rely on driver check-ins.
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-muted-foreground">Route timeline</p>
+                <div className="space-y-2">
+                  {trackingTimeline.map((item, index) => {
+                    const indicatorClass = (() => {
+                      switch (item.state) {
+                        case "completed":
+                          return "bg-emerald-500"
+                        case "current":
+                          return "bg-blue-500"
+                        case "issue":
+                          return "bg-amber-500"
+                        default:
+                          return "bg-muted-foreground/50"
+                      }
+                    })()
+
+                    return (
+                      <div key={`${item.label}-${index}`} className="relative pl-6">
+                        <span className={`absolute left-0 top-1 h-2 w-2 rounded-full ${indicatorClass}`} />
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold">{item.label}</p>
+                            {item.state === "issue" && (
+                              <Badge variant="outline" className="border-amber-300 text-amber-600">
+                                Attention
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{item.description}</p>
+                        </div>
+                        {index < trackingTimeline.length - 1 && <Separator className="my-2" />}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <p className="font-medium text-muted-foreground">Products on board</p>
+                <div className="rounded-md border bg-card">
+                  {trackingRoute.products.map((product, index) => (
+                    <div
+                      key={`${product.productName}-${index}`}
+                      className="flex items-center justify-between px-3 py-2 text-sm"
+                    >
+                      <span>{product.productName}</span>
+                      <span className="text-muted-foreground">{product.quantity} units</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => handleTrackingDialogChange(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }

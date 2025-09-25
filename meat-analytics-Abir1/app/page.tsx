@@ -334,7 +334,7 @@ const { theme, setTheme } = useTheme()
 const { toast } = useToast()
 
 // Authentication state
-const { login, register, logout } = useAuth()
+const { login, register, logout, user } = useAuth()
 const [isAuthenticated, setIsAuthenticated] = useState(false)
 const [showLoginForm, setShowLoginForm] = useState(false)
 const [loginData, setLoginData] = useState({ email: "", password: "" })
@@ -502,6 +502,23 @@ const [products, setProducts] = useState(() => {
   ])
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
+    if (!user) {
+      setIsAuthenticated(false)
+      Promise.resolve(router.replace("/login")).catch((error) => {
+        console.error("Failed to redirect to login:", error)
+      })
+    } else {
+      setIsAuthenticated(true)
+    }
+  }, [mounted, router, user])
+
+  useEffect(() => {
     // Initialize time on client side only
     setCurrentTime(new Date())
     setLastUpdated(new Date())
@@ -511,6 +528,14 @@ const [products, setProducts] = useState(() => {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  if (!mounted || !isAuthenticated) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">Redirecting to login...</p>
+      </div>
+    )
+  }
 
   const handleAdd = async (module, data) => {
     setLoading(true)
@@ -3446,7 +3471,6 @@ const [products, setProducts] = useState(() => {
               </>
             )}
 
-<<<<<<< HEAD
             {currentModule === "slaughter" && (
               <>
                 <div>
@@ -3570,9 +3594,6 @@ const [products, setProducts] = useState(() => {
                 </div>
               </>
             )}
-
-=======
->>>>>>> 334c4fa1c843a63ad0c311520dd373bef04ac10f
             {currentModule === "scale" && (
               <>
                 <div>
