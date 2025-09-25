@@ -28,7 +28,7 @@ export default function LoginPage() {
     const success = await login(loginData.email, loginData.password)
     if (success) {
       toast({ title: "Login successful", description: "Welcome back!" })
-      router.push("/")
+      router.push("/dashboard")
     } else {
       toast({
         title: "Login failed",
@@ -46,7 +46,7 @@ export default function LoginPage() {
     const success = await register(registerData.email, registerData.password, registerData.name, registerData.role)
     if (success) {
       toast({ title: "Registration successful", description: "Welcome to the platform!" })
-      router.push("/")
+      router.push("/dashboard")
     } else {
       toast({ title: "Registration failed", description: "Please try again", variant: "destructive" })
     }
